@@ -1,0 +1,22 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block content %}
+	<div class="row">
+		{% for product in products %}
+		<div class="col-lg-4">
+			{% if product.image %}
+			<img class="thumbnail" src="{{product.image.url}}">
+			{% else %}
+			<img src="{{product.productImage}}">
+			{% endif %}
+			<div class="box-element product">
+				<h6><strong>{{product.name}}</strong></h6>
+				<hr>
+				<a href="{% url 'add_to_cart' pk=product.pk %}" class="btn btn-outline-secondary add-btn">Add to Cart</a>
+				<a class="btn btn-outline-success" href="#">View</a>
+				<h4 style="display: inline-block; float: right"><strong>₹ {{product.price}}</strong></h4>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+{% endblock %}

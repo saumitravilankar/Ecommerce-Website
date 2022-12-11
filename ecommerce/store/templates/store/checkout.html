@@ -1,0 +1,110 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="row">
+		<div class="col-lg-6">
+			<div class="box-element">
+
+				{% if user_with_address %}
+
+				<h2>Shipping Address :</h2><br>
+
+				<h4>Saved Address :</h4><br>
+
+				{% for user in user_with_address %}
+
+					<li>{{ user.address}}</li><br>
+					
+				{% endfor %}
+
+				{% else %}
+
+				<h2>Enter Address :</h2>
+				<form method="POST">
+					{% csrf_token %}
+					{{ form|crispy }}
+					<p></p>
+					<input type="submit" class="btn btn-success" value="Add Address">
+				</form>
+
+				{% endif %}
+
+			</div>
+			{% if user_with_address %}
+			<div class="box-element">
+				<button class="btn btn-primary" id="rzp-button1">Make Payment</button>						
+			</div>
+			{% endif %}
+		</div>
+
+		<div class="col-lg-6">
+			<div class="box-element">
+				<a href="{% url 'cart' %}" class="btn btn-outline-success">Back to cart</a>
+				<h3>order summary</h3>
+				{% for item in items %}
+				<div class="cart-row">
+					<div style="flex:2"><img class="row-image" src="{{item.product.productImage}}"></div>
+					<div style="flex:2"><p>{{item.product.name}}</p></div>
+					<div style="flex:1">
+						<p class="quantity">X {{item.quantity}}</p>
+					</div>
+					<div style="flex:1"><p>₹ {{item.itemTotal}}</p></div>
+				</div>
+				{% endfor %}
+				<strong>Total Items : {{order.orderItems}}</strong><br>
+				<strong>Total Amount Payable: {{order.orderAmount}}</strong>
+			</div>
+		</div>
+</div>
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+var options = {
+    "key": "rzp_test_O7ctPbLsOph6Ta", // Enter the Key ID generated from the Dashboard
+    "amount": {{payment.amount}}, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "INR",
+    "name": "Acme Corp",
+    "description": "Test Transaction",
+    "image": "https://example.com/your_logo",
+    "order_id": "{{payment.id}}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "handler": function (response){
+
+    	console.log('success')
+    	location.href='http://127.0.0.1:8000/success/{{payment.id}}'
+
+        // alert(response.razorpay_payment_id);
+        // alert(response.razorpay_order_id);
+        // alert(response.razorpay_signature);
+    },
+    "prefill": {
+        "name": "Gaurav Kumar",
+        "email": "gaurav.kumar@example.com",
+        "contact": "9999999999"
+    },
+    "notes": {
+        "address": "Razorpay Corporate Office"
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+var rzp1 = new Razorpay(options);
+rzp1.on('payment.failed', function (response){
+        alert(response.error.code);
+        alert(response.error.description);
+        alert(response.error.source);
+        alert(response.error.step);
+        alert(response.error.reason);
+        alert(response.error.metadata.order_id);
+        alert(response.error.metadata.payment_id);
+});
+document.getElementById('rzp-button1').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+
+{% endblock %}
